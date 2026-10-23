@@ -14,7 +14,7 @@ independent of Spotify and the official SpotX project.
 
 ### Download and install
 
-**[Download SpotX WebView 2.0.0](apk/SpotX-WebView-2.0.0.apk)**
+**[Download SpotX WebView 2.0.1](apk/SpotX-WebView-2.0.1.apk)**
 
 1. Download the APK to your phone.
 2. If Android asks, allow installation from your browser or file manager, then
@@ -37,6 +37,8 @@ The APK checksum is available in [SHA256SUMS](SHA256SUMS).
 | Feature | Description |
 |---|---|
 | Compact player | Track title, artist, artwork, play/pause, previous/next, seeking, favorites, shuffle, and repeat; minimized and full-screen modes. |
+| Spotify Connect | Choose a playback device through Spotify's device button and control that device from the app. Automatic playback and recovery respect the active remote device. |
+| Consent windows | The compact player temporarily hides while login, cookie choices, or modal dialogs are visible, so their controls remain accessible. Consent stays under your control. |
 | Android integration | Media notification, Android media session controls, background playback, and picture-in-picture (PiP). |
 | Automatic recovery | After a long time in the background, a stalled playback request reconnects the player and attempts to resume the track at its previous position. |
 | Library | Access to Spotify's catalog, albums, and playlists, with sorting and column controls. |
@@ -67,6 +69,9 @@ session. Cookies and profiles are not cleared.
 
 - Compact player, French labels, corrected gestures, and a properly collapsed library.
 - Settings open directly from a gear icon, without an intermediate panel.
+- Removed inherited automatic device selection and the obsolete takeover setting.
+- Separate local and active device identities; incoming Connect events update the
+  target, and late network responses cannot override a newer handoff.
 - Limited artwork retries, publication of the latest result, and bounded image processing.
 - Fewer interface writes when information has not changed; metadata from different
   tracks is no longer mixed.
@@ -141,7 +146,7 @@ sécurité. Elle est indépendante de Spotify et du projet SpotX officiel.
 
 ### Télécharger et installer
 
-**[Télécharger SpotX WebView 2.0.0](apk/SpotX-WebView-2.0.0.apk)**
+**[Télécharger SpotX WebView 2.0.1](apk/SpotX-WebView-2.0.1.apk)**
 
 1. Télécharger l'APK sur le téléphone.
 2. Autoriser son installation depuis le navigateur ou le gestionnaire de fichiers
@@ -164,6 +169,8 @@ L'empreinte de l'APK est fournie dans [SHA256SUMS](SHA256SUMS).
 | Fonction | Description |
 |---|---|
 | Lecteur compact | Titre, artiste, pochette, lecture/pause, précédent/suivant, progression, favoris, lecture aléatoire et répétition ; modes réduit et plein écran. |
+| Spotify Connect | Choix de l'appareil avec le bouton Spotify et commande de cet appareil depuis l'application. La lecture automatique et la reprise respectent le lecteur distant actif. |
+| Fenêtres de consentement | Le lecteur s'efface pendant la connexion, les choix de cookies et les fenêtres modales pour laisser leurs commandes accessibles. Le consentement reste votre choix. |
 | Intégration Android | Notification média, commandes de la session Android, lecture en arrière-plan et fenêtre flottante PiP. |
 | Reprise automatique | Après une longue veille, une commande bloquée déclenche une reconnexion du lecteur et une tentative de reprise du morceau et de sa position. |
 | Bibliothèque | Accès au catalogue Spotify, aux albums et playlists, tri et colonnes. |
@@ -194,6 +201,9 @@ session du lecteur. Les cookies et profils ne sont pas effacés.
 
 - Lecteur compact, libellés français, gestes corrigés et bibliothèque repliée proprement.
 - Paramètres accessibles directement par une roue dentée, sans panneau intermédiaire.
+- Suppression de la sélection automatique d'appareil héritée et de son réglage devenu inutile.
+- Identifiants du lecteur local et de l'appareil actif séparés ; suivi des événements
+  Connect entrants et protection contre les réponses tardives après un transfert.
 - Reprises de pochettes limitées, publication du dernier résultat et traitement des images borné.
 - Moins d'écritures d'interface quand les informations ne changent pas ; suppression
   du mélange entre les métadonnées de deux morceaux.

@@ -5,7 +5,7 @@ from pathlib import Path
 
 root=Path(__file__).resolve().parents[1]
 strings=[]
-with zipfile.ZipFile(root/'output/SpotX-WebView-2.0.0.apk') as apk:
+with zipfile.ZipFile(root/'output/SpotX-WebView-2.0.1.apk') as apk:
     for name in apk.namelist():
         if not (name.startswith('classes') and name.endswith('.dex')):continue
         dex=apk.read(name)
@@ -41,4 +41,10 @@ verify('window.splUpdate=function(){',['window.spotxPlaybackIcon(pp,isPlaying,ph
 verify('window.mngFetch=async function(input,options)',['new Request(source,options)','new Response(','untilAbort('])
 verify('window.actPlayPause = function(play)', ['spotxPlaybackRecovery', 'BACKGROUND = 120000', 'STALL = 6000', 'AndBridge.reloadPlayer()', 'function restore()'])
 verify('window.firstFuck = function()', ['spotxPlaybackRecovery.isArmed()'])
+verify('window.addAutoFeatures = function ()', ['spotxConnect.canAutoPlay()', 'Device selection belongs exclusively'])
+verify('window.oriFetch = orig;', ['window.spotxConnect', 'active_device_id', 'ObservedSocket', 'info.epoch !== revision'])
+verify('window.playFromUri = function(uri, contextUri)', ['spotxConnect.target()', 'spotxConnect.local()', "command/from/' + splSource"])
+verify('var reqPause=false,firstPlay=true', ['spotxBlockingDialog', '#onetrust-banner-sdk', 'visibility:hidden!important'])
+assert not any('if(ft && window.__splTakeControl' in s for s in strings), 'Legacy automatic device clicks remain in DEX'
+checks+=1
 print(f'PASS {checks} compiled script checks, including inlined runtime copies')

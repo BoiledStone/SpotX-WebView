@@ -1,6 +1,6 @@
 # Construire SpotX WebView
 
-Le dépôt contient les correctifs de l'édition 2.0.0 et un APK prêt à installer.
+Le dépôt contient les correctifs de l'édition 2.0.1 et un APK prêt à installer.
 Le pipeline décode un APK précis de Spotilol, applique les correctifs JavaScript,
 ressources et smali, compile les classes Java ajoutées, reconstruit puis signe.
 
@@ -32,9 +32,9 @@ Depuis la racine du dépôt :
 python tools/build.py --java-home 'C:\Program Files\Java\jdk-21.0.10' --sdk "$env:LOCALAPPDATA\Android\Sdk"
 ```
 
-Le résultat est `output/SpotX-WebView-2.0.0.apk`. Les vérifications de signature
+Le résultat est `output/SpotX-WebView-2.0.1.apk`. Les vérifications de signature
 et d'alignement 16 Kio sont exécutées pendant la construction. Le rapport est dans
-`output/build-report.json`. La version de l'application a le code 20005.
+`output/build-report.json`. La version de l'application a le code 20006.
 
 La première construction génère une clé et son mot de passe dans `.local/`, exclu
 de Git. Conserver ces deux fichiers ensemble pour les mises à jour des APK signés
@@ -53,6 +53,8 @@ node tests/experience.test.mjs
 node tests/optimizations.test.mjs
 node tests/native-fetch.test.mjs
 node tests/playback-recovery.test.mjs
+node tests/connect-state.test.mjs
+node tests/modal-visibility.test.mjs
 python tests/packaged_scripts.test.py
 New-Item -ItemType Directory -Force build/policy-tests | Out-Null
 & 'C:\Program Files\Java\jdk-21.0.10\bin\javac.exe' -d build/policy-tests patches/java/com/boiled/spotx/Policy.java patches/java/com/boiled/spotx/Privacy.java tests/PolicyTest.java

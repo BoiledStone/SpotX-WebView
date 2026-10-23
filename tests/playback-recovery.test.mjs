@@ -50,6 +50,23 @@ function harness({storage=new Map(),playStarts=false}={}){
     const h=harness();h.background();h.state.remote=true;h.c.actPlayPause(true);h.advance(20000);assert.equal(h.state.reloads,0);scenarios++;
 }
 {
+    const h=harness();h.background();h.c.actPlayPause(true);h.advance(4000);h.state.remote=true;
+    h.advance(5000);assert.equal(h.state.reloads,0,'a remote handoff cancels an already pending recovery');scenarios++;
+}
+{
+    const h=harness();h.background();h.c.actPlayPause(true);h.advance(4000);h.c.spotxBlockingDialog=()=>true;
+    h.advance(5000);assert.equal(h.state.reloads,0,'consent must not be reloaded while the user is deciding');scenarios++;
+}
+{
+    const h=harness();h.c.spotxConnect={canAutoPlay:()=>false};h.background();h.c.actPlayPause(true);
+    h.advance(10000);assert.equal(h.state.reloads,0,'unknown active device cannot trigger a takeover through recovery');scenarios++;
+}
+{
+    const storage=new Map([[key,JSON.stringify({createdAt:1000000,uri:track,context:'',position:72000})]]);
+    const h=harness({storage});h.c.spotxConnect={canAutoPlay:()=>false};h.advance(1500);h.state.remote=true;h.advance(5000);
+    assert.equal(h.state.playCalls,0,'remote playback must not be resumed locally after a reload');assert.equal(storage.has(key),false);scenarios++;
+}
+{
     const h=harness();h.background();h.c.actPlayPause(true);h.advance(4000);h.c.actPlayPause(true);h.advance(2000);assert.equal(h.state.reloads,1);scenarios++;
 }
 {

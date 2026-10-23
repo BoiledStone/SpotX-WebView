@@ -235,6 +235,22 @@ public final class SecurityInstrumentation extends Instrumentation {
             check("true".equals(eval("document.getElementById('spotilolPlayerControls').getBoundingClientRect().right<=innerWidth+1")),"player fits phone viewport");
             check("\"Lecture\"".equals(eval("document.getElementById('spl-play').getAttribute('aria-label')")),"French playback accessibility label");
             check("\"slider\"".equals(eval("document.getElementById('spl-bar').getAttribute('role')")),"seek bar has slider semantics");
+            eval("window.consentAccepted=false;var consent=document.createElement('div');consent.id='onetrust-banner-sdk';consent.style.cssText='position:fixed;bottom:0;width:100%;height:180px;background:white';consent.innerHTML='<button id=consent-choice>Cookies and terms</button>';consent.querySelector('button').onclick=function(){consentAccepted=true;consent.remove()};document.body.append(consent);true");
+            check(waitValue("getComputedStyle(document.getElementById('spotilolPlayerControls')).visibility","\"hidden\""),"consent window is not covered by the player in Android WebView");
+            check("false".equals(eval("consentAccepted")),"consent is never automatically accepted");
+            eval("document.getElementById('consent-choice').click();true");
+            check(waitValue("getComputedStyle(document.getElementById('spotilolPlayerControls')).visibility","\"visible\""),"player returns after the consent choice");
+            check(Hardening.hideTakeoverSetting(getTargetContext().getString(0x7f110316)),"obsolete automatic takeover setting is hidden");
+            check(!Hardening.hideTakeoverSetting("Another setting"),"other settings remain visible");
+            eval("window.WebSocket=class FixtureSocket{addEventListener(name,fn){this.receive=fn}message(value){this.receive({data:JSON.stringify(value)})}};true");
+            eval(asset("connect-state.js"));
+            eval(asset("native-fetch.js"));
+            eval("spotxConnect.describe('https://gue1-spclient.spotify.com/track-playback/v1/devices','POST',JSON.stringify({device:{device_id:'fixture-local'}}));window.fixtureSocket=new WebSocket('wss://gue1-dealer.spotify.com/');fixtureSocket.message({payloads:[{cluster:{active_device_id:'fixture-speaker'}}]});true");
+            check("true".equals(eval("spotxConnect.isRemote()&&!spotxConnect.canAutoPlay()&&spotDevId==='fixture-local'")),"incoming Connect handoff keeps local identity and disables automatic playback");
+            eval("window.fixtureFetch=AndBridge.nFetch;AndBridge.nFetch=function(url,opts){window.connectCommandUrl=url;return Promise.resolve(JSON.stringify({status:204,headers:{},body:''}))};window.featVer='fixture';window.spotAuthToken='test-only';window.spotCliToken='test-only';playFromUri('spotify:track:0123456789abcdefghijkl');true");
+            check(waitValue("window.connectCommandUrl&&connectCommandUrl.endsWith('/from/fixture-local/to/fixture-speaker')","true"),"track selection is sent to the remote device in Android WebView");
+            eval("AndBridge.nFetch=fixtureFetch;fixtureSocket.message({active_device_id:'fixture-local'});true");
+            check("true".equals(eval("spotxConnect.canAutoPlay()")),"explicit return to local device permits local recovery again");
             File folder=getTargetContext().getExternalFilesDir("validation");folder.mkdirs();
             Bitmap screenshot=getUiAutomation().takeScreenshot();
             if(screenshot!=null)try(FileOutputStream out=new FileOutputStream(new File(folder,"player-phone.png"))){screenshot.compress(Bitmap.CompressFormat.PNG,100,out);screenshot.recycle();}

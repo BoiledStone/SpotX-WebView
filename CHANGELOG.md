@@ -1,5 +1,17 @@
 # Historique
 
+## 2.0.1 — 23 octobre 2026
+
+- Le lecteur compact s'efface devant les conditions d'utilisation, les choix de
+  cookies, la connexion et les fenêtres modales ; aucun consentement automatique.
+- Suppression des clics automatiques qui reprenaient la lecture sur le téléphone
+  et retrait du réglage de prise de contrôle.
+- Spotify Connect : identifiant local conservé, suivi de l'appareil actif à partir
+  des échanges existants, commandes de morceaux envoyées à l'appareil choisi.
+- Protection contre les réponses tardives, la lecture automatique et la reprise
+  après veille lorsqu'un appareil distant est actif ou que son état est inconnu.
+- Tests de régression sur le consentement, le transfert Connect et la reprise.
+
 ## 2.0.0 — 23 octobre 2026
 
 - Nouvelle identité SpotX WebView et retrait du nom personnel de l'en-tête.

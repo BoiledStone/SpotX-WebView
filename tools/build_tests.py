@@ -35,6 +35,7 @@ def main():
         z.write(dex/'classes.dex','classes.dex',compress_type=zipfile.ZIP_STORED)
         z.writestr('assets/player.html',page,compress_type=zipfile.ZIP_DEFLATED)
         z.writestr('assets/native-fetch.js',(ROOT/'patches/native-fetch.js').read_text(encoding='utf-8'),compress_type=zipfile.ZIP_DEFLATED)
+        z.writestr('assets/connect-state.js',(ROOT/'patches/connect-state.js').read_text(encoding='utf-8'),compress_type=zipfile.ZIP_DEFLATED)
     aligned=dest/'aligned.apk';output=ROOT/'output/SpotX-WebView-tests.apk'
     run(bt/'zipalign.exe','-f','4',unsigned,aligned)
     env=dict(os.environ,JAVA_HOME=str(java.parents[1]),SPOTX_WEBVIEW_KEY_PASS=json.loads((ROOT/'.local/signing.json').read_text())['password'])

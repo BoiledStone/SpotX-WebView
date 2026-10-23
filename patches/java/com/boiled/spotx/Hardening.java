@@ -13,10 +13,13 @@ import java.lang.reflect.Proxy;
 
 public final class Hardening {
     private static final String MEDIA_TOKEN=java.util.UUID.randomUUID().toString();
+    private static Context appContext;
     private Hardening() {}
     public static void initialize(Context c) {
+        appContext=c.getApplicationContext();
         SharedPreferences p=c.getSharedPreferences("spotilol_prefs",0);
         SharedPreferences.Editor e=p.edit();
+        if(!p.getBoolean("SpotXConnectV1",false))e.putBoolean("SpotXConnectV1",true).putBoolean("TakeControl",false);
         if(!p.getBoolean("SpotXDefaultsV1",false)) {
             e.putBoolean("SpotXDefaultsV1",true).putBoolean("HideEmptyPlayer",true)
                 .putBoolean("Logging",false).putBoolean("DebugOverlay",false)
@@ -24,6 +27,9 @@ public final class Hardening {
         }
         // The upstream updater cannot update this independently signed application.
         e.putBoolean("ServiceOn",true).putLong("LastUpdateCheck",Long.MAX_VALUE).apply();
+    }
+    public static boolean hideTakeoverSetting(String title) {
+        return appContext!=null && appContext.getString(0x7f110316).equals(title);
     }
     public static void permission(PermissionRequest request) {
         if(request==null) return;

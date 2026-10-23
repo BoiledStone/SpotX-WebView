@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BASE_HASH = 'a48b347b00120ffb223932448fee3a503b22e9b73e399f831f8f512604268077'
 APP_ID = 'com.boiled.spotx.webview'
-VERSION = '2.0.0'
+VERSION = '2.0.1'
 ANDROID = '{http://schemas.android.com/apk/res/android}'
 ET.register_namespace('android', ANDROID[1:-1])
 
@@ -51,13 +51,28 @@ def settings_drawable_id(work):
 def script_changes():
     originals = {p.name:p.read_text(encoding='utf-8') for p in (ROOT/'baseline/scripts').glob('*.js')}
     changed = dict(originals)
+    fetch=originals['FetchOverride.CONTENT.js']
+    start=fetch.index('                window.__splLocalDevId =')
+    end=fetch.index('                var orig =',start)
+    fetch=fetch[:start]+fetch[end:]
+    start=fetch.index('                        var m = url.match(')
+    end=fetch.index('                        var m4 =',start)
+    fetch=fetch[:start]+fetch[end:]
+    fetch=replace_once(fetch,'                    var p = orig.call(window, input, init);',
+        '                    var observation=window.spotxConnect.request(input,init);\n                    var p = orig.call(window, input, init);\n                    window.spotxConnect.response(observation,p);','observe Connect responses')
+    changed['FetchOverride.CONTENT.js']=(ROOT/'patches/connect-state.js').read_text(encoding='utf-8')+'\n'+fetch
+    changed['AutoFeatures.CONTENT.js']=(ROOT/'patches/auto-features.js').read_text(encoding='utf-8')
     changed['ClassicBridge.CONTENT.js']=(ROOT/'patches/native-fetch.js').read_text(encoding='utf-8')
-    changed['PlaybackControls.CONTENT.js']=originals['PlaybackControls.CONTENT.js']+'\n'+(ROOT/'patches/playback-recovery.js').read_text(encoding='utf-8')
+    playback=replace_once(originals['PlaybackControls.CONTENT.js'],
+        "var splTarget = (typeof window.__splRemoteActive === 'function' && window.__splRemoteActive() && window.__splActiveDevId) ? window.__splActiveDevId : window.spotDevId;",
+        "var splTarget=window.spotxConnect?window.spotxConnect.target():window.spotDevId;\n                var splSource=window.spotxConnect?window.spotxConnect.local():window.spotDevId;\n                if(!splSource||!splTarget)return;",'stable Connect source and active target')
+    playback=replace_once(playback,"/command/from/' + window.spotDevId + '/to/' + splTarget", "/command/from/' + splSource + '/to/' + splTarget",'Connect command sender')
+    changed['PlaybackControls.CONTENT.js']=playback+'\n'+(ROOT/'patches/playback-recovery.js').read_text(encoding='utf-8')
     changed['MainLoop.CONTENT.js']=replace_once(originals['MainLoop.CONTENT.js'],
         "if(ulFlag && window.splIsPlaying()===false)",
-        "if(window.spotxPlaybackRecovery&&window.spotxPlaybackRecovery.isArmed()){ulFlag=false;return;}\n                            if(ulFlag && window.splIsPlaying()===false)",
+        "if(!window.spotxConnect||!window.spotxConnect.canAutoPlay()||(window.spotxPlaybackRecovery&&window.spotxPlaybackRecovery.isArmed())){ulFlag=false;return;}\n                            if(ulFlag && window.splIsPlaying()===false)",
         'avoid skipping a stalled track during recovery')
-    changed['PlayerCore.CONTENT.js'] = (ROOT/'patches/experience.js').read_text(encoding='utf-8')+'\n'+originals['PlayerCore.CONTENT.js']
+    changed['PlayerCore.CONTENT.js'] = (ROOT/'patches/modal-visibility.js').read_text(encoding='utf-8')+'\n'+(ROOT/'patches/experience.js').read_text(encoding='utf-8')+'\n'+originals['PlayerCore.CONTENT.js']
     p1 = originals['SpotilolPlayer.PART_1.js']
     p1 = replace_once(p1, '<img id="spl-cover-img" src="" alt="">', '<img id="spl-cover-img" hidden alt="">', 'initial artwork')
     p1 = p1.replace("!t||!t.textContent||t.textContent==='No track'", "!t||!t.textContent||pl.dataset.spotxEmpty==='true'")
@@ -180,6 +195,15 @@ def patch_smali(work):
     edit('uh.smali',lambda s:replace_once(s,
         '    invoke-static {}, Ly13;->z()Ly32;\n\n    move-result-object v8\n\n    const v0, 0x7f110141',
         '    invoke-static {}, Lzd4;->k()Ly32;\n\n    move-result-object v8\n\n    const v0, 0x7f110141','header settings gear'))
+    edit('b15.smali',lambda s:replace_once(s,
+        '.method public static final E(Ljava/lang/String;Ljava/lang/String;Ly32;ZLro1;Lyg0;I)V\n    .locals 27',
+        '''.method public static final E(Ljava/lang/String;Ljava/lang/String;Ly32;ZLro1;Lyg0;I)V
+    .locals 27
+    invoke-static/range {p0 .. p0}, Lcom/boiled/spotx/Hardening;->hideTakeoverSetting(Ljava/lang/String;)Z
+    move-result v0
+    if-eqz v0, :spotx_setting_visible
+    return-void
+    :spotx_setting_visible''','remove automatic takeover setting'))
 
     def client(s):
         for name, policy in [('isGoogleAuthUrl','google'),('isSpotifyHost','spotify'),('isWebPlayerUrl','player')]:
@@ -259,6 +283,7 @@ def patch_smali(work):
         s=s[:quick.start()]+body+s[quick.end():]
         s=replace_once(s,'window.__splBg = true;\\n', 'window.__splBg = true;window.spotxPlaybackRecovery&&window.spotxPlaybackRecovery.background();\\n','recovery background signal')
         s=replace_once(s,'window.__splBg = false;\\n', 'window.__splBg = false;window.spotxPlaybackRecovery&&window.spotxPlaybackRecovery.resume();\\n','recovery resume signal')
+        s=replace_once(s,"if(typeof splAutoPlay === \\'function\\') splAutoPlay();", "if(typeof splAutoPlay === \\'function\\' && window.spotxConnect && window.spotxConnect.canAutoPlay()) splAutoPlay();",'resume respects Connect device')
         s=replace_method(s,'private final extractSpotifyLink(Landroid/content/Intent;)Ljava/lang/String;','''    .locals 1
     invoke-static {p1}, Lcom/boiled/spotx/Hardening;->link(Landroid/content/Intent;)Ljava/lang/String;
     move-result-object v0
@@ -419,7 +444,7 @@ def patch_resources(work):
         path=work/'res/mipmap-anydpi'/name
         path.write_text(path.read_text(encoding='utf-8').replace('@mipmap/ic_launcher_foreground','@drawable/spotx_foreground'),encoding='utf-8')
     yml=work/'apktool.yml';s=yml.read_text(encoding='utf-8')
-    s=replace_once(s,'versionCode: 23','versionCode: 20005','versionCode')
+    s=replace_once(s,'versionCode: 23','versionCode: 20006','versionCode')
     s=replace_once(s,'versionName: 1.2.4','versionName: '+VERSION,'versionName');yml.write_text(s,encoding='utf-8')
     assets=work/'assets/spotx';assets.mkdir(exist_ok=True)
     shutil.copy2(ROOT/'patches/secure-bridge.js',assets/'secure-bridge.js')

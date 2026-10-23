@@ -6,6 +6,7 @@
     var backgroundAt = null, armedUntil = 0, pending = null, timer = null, restoring = false;
     var restoreTimer = null, restoreSeek = null;
     function remote() { try { return !!(window.__splRemoteActive && window.__splRemoteActive()); } catch (_) { return false; } }
+    function localAllowed() { return !window.spotxConnect || window.spotxConnect.canAutoPlay(); }
     function uri(value) { return typeof value === 'string' && /^spotify:(track|episode):[A-Za-z0-9]{22}$/.test(value) ? value : ''; }
     function context(value) {
         return typeof value === 'string' && /^(spotify:(track|episode|album|playlist|artist|show):[A-Za-z0-9]{22}|spotify:collection:tracks|spotify:user:[A-Za-z0-9._-]{1,128}:collection)$/.test(value) ? value : '';
@@ -43,7 +44,7 @@
         if (restoring) return;
         if (restoreTimer !== null || restoreSeek) { clearTimeout(restoreTimer); restoreTimer = null; restoreSeek = null; removeResume(); }
         if (!play) { cancel(); return; }
-        if (!armed() || remote()) return;
+        if (!armed() || remote() || !localAllowed()) return;
         // Repeated clicks must not postpone detection forever.
         var now = Date.now(), wanted = uri(target);
         if (!pending || (wanted && pending.uri !== wanted)) {
@@ -74,7 +75,7 @@
         timer = null;
         if (!pending) return;
         var now = Date.now(), sample = snapshot();
-        if (remote() || now - pending.createdAt > 60000 || !armed()) { pending = null; return; }
+        if (remote() || !localAllowed() || (window.spotxBlockingDialog && window.spotxBlockingDialog()) || now - pending.createdAt > 60000 || !armed()) { pending = null; return; }
         if (sample.uri === pending.sample.uri && sample.position > pending.sample.position + 250 && playing()) {
             pending.advanced += sample.position - pending.sample.position;
             if (pending.advanced >= 1500) { pending = null; return; }
@@ -122,7 +123,7 @@
     var readyAt = null, expiresAt = Date.now() + 45000;
     function restore() {
         if (Date.now() > expiresAt || remote()) { removeResume(); return; }
-        if (navigator.onLine === false || !window.ffDone || !window.splEnsurePb || !window.splEnsurePb()) {
+        if (navigator.onLine === false || (window.spotxConnect && !window.spotxConnect.canAutoPlay()) || (window.spotxBlockingDialog && window.spotxBlockingDialog()) || !window.ffDone || !window.splEnsurePb || !window.splEnsurePb()) {
             readyAt = null; restoreTimer = setTimeout(restore, 500); return;
         }
         if (readyAt === null) readyAt = Date.now();
