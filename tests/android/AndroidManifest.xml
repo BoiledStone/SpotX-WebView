@@ -3,4 +3,6 @@
     <application android:label="SpotX validation" android:allowBackup="false"/>
     <instrumentation android:name="com.boiled.spotx.tests.SecurityInstrumentation" android:targetPackage="com.boiled.spotx.webview" android:label="SpotX security and experience tests"/>
     <instrumentation android:name="com.boiled.spotx.tests.LiveInstrumentation" android:targetPackage="com.boiled.spotx.webview" android:label="Temporary live WebView diagnostic"/>
+    <instrumentation android:name="com.boiled.spotx.tests.SettingsInstrumentation" android:targetPackage="com.boiled.spotx.webview" android:label="Read-only native settings navigation validation"/>
+    <instrumentation android:name="com.boiled.spotx.tests.ThemePickerInstrumentation" android:targetPackage="com.boiled.spotx.webview" android:label="SpotX theme gallery validation"/>
 </manifest>

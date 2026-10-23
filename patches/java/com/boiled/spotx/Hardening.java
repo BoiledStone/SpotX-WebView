@@ -14,6 +14,8 @@ import java.lang.reflect.Proxy;
 public final class Hardening {
     private static final String MEDIA_TOKEN=java.util.UUID.randomUUID().toString();
     private static Context appContext;
+    private static Context labelsContext;
+    private static String labelsLocale;
     private Hardening() {}
     public static void initialize(Context c) {
         appContext=c.getApplicationContext();
@@ -26,10 +28,25 @@ public final class Hardening {
                 .putBoolean("ShowScrollbar",false);
         }
         // The upstream updater cannot update this independently signed application.
-        e.putBoolean("ServiceOn",true).putLong("LastUpdateCheck",Long.MAX_VALUE).apply();
+        e.putBoolean("ServiceOn",true).putBoolean("TelemetryEnabled",false).putLong("LastUpdateCheck",Long.MAX_VALUE).apply();
     }
-    public static boolean hideTakeoverSetting(String title) {
-        return appContext!=null && appContext.getString(0x7f110316).equals(title);
+    public static boolean hideToggleSetting(String title) {
+        return title!=null && title.equals(label(0x7f110316));
+    }
+    public static boolean isTelemetrySetting(String title) {
+        return title!=null && title.equals(label(0x7f110318));
+    }
+    public static boolean hideInfoSetting(String title) {
+        return title!=null && title.equals(label(0x7f1102ad));
+    }
+    private static synchronized String label(int resource) {
+        if(appContext==null)return null;
+        java.util.Locale locale=java.util.Locale.getDefault();String tag=locale.toLanguageTag();
+        if(!tag.equals(labelsLocale)){
+            android.content.res.Configuration config=new android.content.res.Configuration(appContext.getResources().getConfiguration());
+            config.setLocale(locale);labelsContext=appContext.createConfigurationContext(config);labelsLocale=tag;
+        }
+        return labelsContext.getString(resource);
     }
     public static void permission(PermissionRequest request) {
         if(request==null) return;

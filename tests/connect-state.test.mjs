@@ -33,6 +33,11 @@ assert.equal(connect.target(),'new-speaker','late response bodies cannot overrid
 socket.message({active_device_id:'desktop'});
 await connect.response(connect.describe('https://gue1-spclient.spotify.com/track-playback/v1/devices/local-player/state','PUT','{}'),Promise.resolve(new Response(JSON.stringify({device:{device_id:'local-player'}}),{status:200})));
 assert.equal(connect.target(),'desktop','local state acknowledgements do not identify the active device');
+const repeatedRead=connect.describe('https://gue1-spclient.spotify.com/connect-state/v1/devices','GET',null);
+socket.message({payloads:[{cluster:{active_device_id:'desktop'}}]});
+await connect.response(repeatedRead,Promise.resolve(new Response(JSON.stringify({active_device_id:'local-player'}),{status:200})));
+assert.equal(connect.target(),'desktop','a repeated server confirmation defeats an older conflicting HTTP snapshot');
+assert.equal(connect.canAutoPlay(),false,'an older snapshot cannot re-enable local autoplay after a remote confirmation');
 vm.runInContext(read('patches/native-fetch.js'),c);
 vm.runInContext(read('build/scripts/PlaybackControls.CONTENT.js').split('(function () {')[0],c);
 c.playFromUri('spotify:track:0123456789abcdefghijkl');

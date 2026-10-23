@@ -1,12 +1,12 @@
 {
   "baseline_sha256": "a48b347b00120ffb223932448fee3a503b22e9b73e399f831f8f512604268077",
   "application_id": "com.boiled.spotx.webview",
-  "version": "2.0.1",
-  "apk_sha256": "55a5eae7cc7782da3b1bc9f3314c686879ecb15fab5e2e1e15cbfbc7c59626ff",
-  "apk_bytes": 19424215,
+  "version": "2.0.2",
+  "version_code": 20007,
+  "apk_sha256": "93a4d33159c5902e4eb021d02d45671d8ab9e25f6f0dcc036a172d244285a3f0",
+  "apk_bytes": 19448791,
   "patch_stats": {
-    "script_replacements": 34,
-    "smali_files_examined": 16407
+    "reused_patched_workspace": true
   },
   "signature_verified": true,
   "alignment_16k_verified": true,

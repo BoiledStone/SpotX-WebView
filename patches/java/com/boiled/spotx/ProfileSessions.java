@@ -23,6 +23,10 @@ public final class ProfileSessions {
         "https://api-partner.spotify.com","https://gew4-spclient.spotify.com","https://spclient.wg.spotify.com",
         "https://api.spotify.com","https://www.spotify.com");
     private ProfileSessions(){}
+    /** Cookie-header exports omit attributes; keep the known login cookie inaccessible to JS. */
+    public static String cookieValue(String pair) {
+        return pair+"; Path=/; Secure"+(pair.startsWith("sp_dc=")?"; HttpOnly":"");
+    }
     public static boolean restore(Context context,String raw){
         final List<String[]> cookies=new ArrayList<>();boolean authenticated=false;
         try{
@@ -31,14 +35,14 @@ public final class ProfileSessions {
             while(hosts.hasNext()){
                 String host=hosts.next();if(!DOMAINS.contains(host))return false;
                 String pairs=source.getString(host);
-                if(pairs.indexOf('\n')>=0||pairs.indexOf('\r')>=0)return false;
+                for(int i=0;i<pairs.length();i++)if(pairs.charAt(i)<32||pairs.charAt(i)==127)return false;
                 for(String pair:pairs.split(";")){
                     pair=pair.trim();if(pair.isEmpty())continue;
                     int eq=pair.indexOf('=');if(eq<1||pair.length()>16384)return false;
                     String name=pair.substring(0,eq);
                     if(!name.matches("[A-Za-z0-9_!#$%&'*+.^`|~-]+"))return false;
                     if(name.equals("sp_dc")&&pair.length()>eq+1)authenticated=true;
-                    cookies.add(new String[]{host,pair+"; Path=/; Secure"});
+                    cookies.add(new String[]{host,cookieValue(pair)});
                     if(cookies.size()>1000)return false;
                 }
             }

@@ -1,6 +1,6 @@
 # Construire SpotX WebView
 
-Le dépôt contient les correctifs de l'édition 2.0.1 et un APK prêt à installer.
+Le dépôt contient les correctifs de l'édition 2.0.2 et un APK prêt à installer.
 Le pipeline décode un APK précis de Spotilol, applique les correctifs JavaScript,
 ressources et smali, compile les classes Java ajoutées, reconstruit puis signe.
 
@@ -32,9 +32,9 @@ Depuis la racine du dépôt :
 python tools/build.py --java-home 'C:\Program Files\Java\jdk-21.0.10' --sdk "$env:LOCALAPPDATA\Android\Sdk"
 ```
 
-Le résultat est `output/SpotX-WebView-2.0.1.apk`. Les vérifications de signature
+Le résultat est `output/SpotX-WebView-2.0.2.apk`. Les vérifications de signature
 et d'alignement 16 Kio sont exécutées pendant la construction. Le rapport est dans
-`output/build-report.json`. La version de l'application a le code 20006.
+`output/build-report.json`. La version de l'application a le code 20007.
 
 La première construction génère une clé et son mot de passe dans `.local/`, exclu
 de Git. Conserver ces deux fichiers ensemble pour les mises à jour des APK signés
@@ -69,9 +69,15 @@ Sur un appareil de développement connecté, après installation de l'applicatio
 ```powershell
 adb install -r output/SpotX-WebView-tests.apk
 adb shell am instrument -w com.boiled.spotx.webview.tests/com.boiled.spotx.tests.SecurityInstrumentation
+adb shell am instrument -w com.boiled.spotx.webview.tests/com.boiled.spotx.tests.SettingsInstrumentation
+adb shell am instrument -w com.boiled.spotx.webview.tests/com.boiled.spotx.tests.ThemePickerInstrumentation
 adb uninstall com.boiled.spotx.webview.tests
 ```
 
 L'instrumentation arrête et relance le processus testé. Ne pas la lancer pendant
 une saisie de compte. Les fixtures utilisent des données fictives et ne sont pas
 des pages du catalogue Spotify.
+
+Le test des thèmes vérifie aussi une application réelle de palette, puis restaure
+les valeurs initiales de `ThemePreset` et `MaterialYou` même en cas d'échec.
+Il ne modifie ni les profils ni les données de connexion.

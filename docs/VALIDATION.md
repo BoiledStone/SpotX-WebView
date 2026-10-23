@@ -1,4 +1,4 @@
-# Validation de l'édition 2.0.1
+# Validation de l'édition 2.0.2
 
 Les scénarios sont ciblés et reproductibles. Cette page distingue les fonctions
 observées sur un appareil des options encore héritées sans essai complet.
@@ -7,10 +7,12 @@ observées sur un appareil des options encore héritées sans essai complet.
 |---|---|
 | URL, en-têtes et confidentialité | 158 assertions JVM réussies |
 | Protocole du pont asynchrone | 15 assertions JavaScript réussies |
-| WebView Android : origines, permissions, réseau, média, consentement, Connect, annulations et reprise | 57 contrôles réussis |
-| Scripts réellement compilés dans les DEX, y compris les copies intégrées par R8 | 71 contrôles réussis |
+| WebView Android : origines, permissions, réseau, média, consentement, Connect, cookies de profils, annulations et reprise | 66 contrôles réussis |
+| Scripts réellement compilés dans les DEX, y compris les copies intégrées par R8 et les liens des paramètres | 79 contrôles réussis |
 | Reprise automatique | 20 scénarios : veille, progression, pause, réseau, transfert distant pendant une reprise, consentement, état inconnu, limites et position |
-| Spotify Connect | Transfert entrant, identité locale stable, commande vers le lecteur distant, refus de transfert et réponses tardives testés avec des échanges simulés |
+| Spotify Connect | Transfert entrant, identité locale stable, commande distante, refus de transfert et ancienne réponse opposée à une nouvelle confirmation du même appareil |
+| Paramètres natifs | Ouverture par la roue dentée, défilement des onglets, accès À propos, version 2.0.2 et dépôt actuel vérifiés sur Android |
+| Thèmes | 46 contrôles Android : recherche, aperçu, annulation, éditeur avancé, clavier, application d'une palette et restauration des réglages d'origine |
 | Consentement | Le lecteur s'efface devant les cookies et conditions ; aucun accord automatique ; retour du lecteur après le choix, dans Chrome et Android WebView |
 | Lecteur | Quatre tailles : 320 × 740, 360 × 800, 412 × 915, 740 × 360 ; modes normal, réduit et plein écran |
 | Optimisations | Pas d'écritures DOM inutiles sur 30 rafraîchissements identiques ; reprises de pochettes bornées |
@@ -43,6 +45,20 @@ identité locale et désactive les relances automatiques. L'utilisateur a confir
 qu'un morceau choisi depuis l'APK continue de jouer sur le deuxième appareil,
 sans retour du son vers le téléphone.
 
+En 2.0.2, la galerie utilise le catalogue existant de 70 thèmes sur l'appareil,
+y compris les thèmes personnalisés disponibles. L'aperçu et l'annulation ne
+modifient pas les préférences. Le test d'application active temporairement les
+couleurs système, applique une autre palette, vérifie leur désactivation puis
+restaure le preset et le mode d'origine dans un bloc de nettoyage. AMOLED et la
+couleur secondaire sont vérifiés inchangés. Les captures de revue restent privées.
+La recherche est testée avec le vrai clavier Android : les cartes et boutons
+restent accessibles au-dessus du clavier et l'aperçu revient à sa fermeture.
+
+La protection HttpOnly est vérifiée dans Android WebView avec un cookie factice
+sur un domaine réservé au test, sans effacer ni lire les cookies de la session
+Spotify réelle. Le format hérité ne mémorise pas les attributs complets des cookies ;
+le correctif protège explicitement le cookie de connexion `sp_dc`.
+
 Les tests Android utilisent un APK d'instrumentation distinct. Il n'est pas inclus
 dans le dossier `apk/`. Les outils de diagnostic sont retirés après les essais et
 le processus normal ne publie pas de socket de débogage WebView.
@@ -69,6 +85,8 @@ le processus normal ne publie pas de socket de débogage WebView.
 - [WHATWG Fetch](https://fetch.spec.whatwg.org/).
 - [Spotify : fonctionnement de Connect](https://developer.spotify.com/documentation/web-playback-sdk/concepts/spotify-connect).
 - [Spotify : transfert de lecture](https://developer.spotify.com/documentation/web-api/reference/transfer-a-users-playback).
+- [Android : CookieManager](https://developer.android.com/reference/android/webkit/CookieManager).
+- [RFC 6265 : attribut HttpOnly](https://httpwg.org/specs/rfc6265.html#section-4.1.2.6).
 
 Les références Spotify décrivent le comportement attendu de Connect. Le correctif
 observe les échanges déjà utilisés par le lecteur web hérité ; leurs routes

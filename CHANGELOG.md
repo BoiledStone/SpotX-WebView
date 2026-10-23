@@ -1,5 +1,20 @@
 # Historique
 
+## 2.0.2 — 23 octobre 2026
+
+- Galerie de thèmes avec recherche, aperçu avant application et annulation ; les
+  outils avancés, imports, exports et thèmes personnalisés restent accessibles.
+- Appliquer une palette désactive les couleurs système qui pouvaient masquer le choix.
+- Recherche des thèmes utilisable avec le clavier ouvert ; les actions restent
+  visibles et l'aperçu se rétablit à la fermeture du clavier.
+- Dépôt, versions et historique reliés à SpotX WebView ; l'ancien lien Discord
+  est remplacé par les signalements GitHub.
+- Version cohérente sur l'accueil, dans les paramètres, le mode hors-ligne et les exports.
+- Retrait du réglage de télémétrie inopérant et des modes d'interface indisponibles.
+- Restauration des profils : cookie de connexion HttpOnly et validation des caractères de contrôle avant toute modification de session.
+- Spotify Connect : une nouvelle confirmation du même appareil reste prioritaire
+  sur une réponse réseau ancienne qui pourrait réactiver la lecture locale.
+
 ## 2.0.1 — 23 octobre 2026
 
 - Le lecteur compact s'efface devant les conditions d'utilisation, les choix de

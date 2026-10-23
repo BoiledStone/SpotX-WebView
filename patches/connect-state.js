@@ -5,7 +5,9 @@
     function id(value) { return typeof value === 'string' && /^[A-Za-z0-9_-]{1,160}$/.test(value) ? value : null; }
     function setLocal(value) { value = id(value); if (value) { local = value; window.__splLocalDevId = value; window.spotDevId = value; } }
     function setActive(value) {
-        value = id(value); if (active !== value) revision++;
+        // A server observation is newer even when it confirms the current device.
+        // Otherwise an older HTTP snapshot can overwrite a more recent push.
+        value = id(value); revision++;
         active = value; window.__splActiveDevId = value;
     }
     // Inspect only explicit active-device fields, never arbitrary device_id acknowledgements.

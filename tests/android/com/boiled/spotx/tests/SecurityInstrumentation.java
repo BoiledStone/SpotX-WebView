@@ -145,6 +145,22 @@ public final class SecurityInstrumentation extends Instrumentation {
             while((n=in.read(buf))!=-1)out.write(buf,0,n);return out.toString("UTF-8");
         }
     }
+    private void profileCookieProtection()throws Exception{
+        final String origin="https://spotx-profile-fixture.invalid";
+        android.webkit.CookieManager manager=android.webkit.CookieManager.getInstance();
+        CountDownLatch written=new CountDownLatch(1);
+        try{
+            runOnMainSync(()->manager.setCookie(origin,ProfileSessions.cookieValue("sp_dc=test-only"),ok->written.countDown()));
+            check(written.await(3,TimeUnit.SECONDS),"restored test cookie is acknowledged by Android");
+            load(origin,"<html><body>Isolated profile cookie fixture</body></html>");
+            check(manager.getCookie(origin)!=null&&manager.getCookie(origin).contains("sp_dc=test-only"),"restored test cookie remains available to HTTP requests");
+            check("true".equals(eval("!document.cookie.includes('sp_dc=')")),"restored authentication cookie is inaccessible to JavaScript in Android WebView");
+        }finally{
+            CountDownLatch removed=new CountDownLatch(1);
+            runOnMainSync(()->manager.setCookie(origin,"sp_dc=; Path=/; Max-Age=0; Secure; HttpOnly",ok->removed.countDown()));
+            removed.await(3,TimeUnit.SECONDS);
+        }
+    }
     @Override public void onStart(){
         Bundle report=new Bundle();
         try{
@@ -207,6 +223,8 @@ public final class SecurityInstrumentation extends Instrumentation {
             check(rejected,"download ID traversal rejected");
             check(!ProfileSessions.restore(getTargetContext(),"{\"https://evil.invalid\":\"sp_dc=abc\"}"),"invalid session domain rejected before cookie removal");
             check(!ProfileSessions.restore(getTargetContext(),"{\"https://open.spotify.com\":\"sp_dc=abc\\r\\nHeader: x\"}"),"cookie header injection rejected");
+            check(!ProfileSessions.restore(getTargetContext(),"{\"https://open.spotify.com\":\"sp_dc=test\\tvalue\"}"),"invalid cookie controls are rejected before the active session is touched");
+            profileCookieProtection();
             check(new JSONObject(NativeHttp.fetch("https://api.spotify.com/test","{}",()->true)).getInt("status")==0,"cancelled native fetch rejected before connection");
             artworkCancellation();
             artworkRetry();
@@ -240,8 +258,23 @@ public final class SecurityInstrumentation extends Instrumentation {
             check("false".equals(eval("consentAccepted")),"consent is never automatically accepted");
             eval("document.getElementById('consent-choice').click();true");
             check(waitValue("getComputedStyle(document.getElementById('spotilolPlayerControls')).visibility","\"visible\""),"player returns after the consent choice");
-            check(Hardening.hideTakeoverSetting(getTargetContext().getString(0x7f110316)),"obsolete automatic takeover setting is hidden");
-            check(!Hardening.hideTakeoverSetting("Another setting"),"other settings remain visible");
+            check(Hardening.hideToggleSetting(getTargetContext().getString(0x7f110316)),"obsolete automatic takeover setting is hidden");
+            check(!Hardening.hideToggleSetting("Another setting"),"other settings remain visible");
+            check(Hardening.isTelemetrySetting(getTargetContext().getString(0x7f110318)),"disabled telemetry is presented as a read-only status");
+            check(Hardening.hideInfoSetting(getTargetContext().getString(0x7f1102ad)),"unavailable GUI modes do not appear as a setting");
+            check(ProfileSessions.cookieValue("sp_dc=test-only").endsWith("; Secure; HttpOnly"),"restored authentication cookie retains HttpOnly protection");
+            check(!ProfileSessions.cookieValue("sp_t=test-only").contains("HttpOnly"),"non-authentication cookies keep their existing script access");
+            AtomicBoolean localeRows=new AtomicBoolean(true);
+            runOnMainSync(()->{
+                java.util.Locale previous=java.util.Locale.getDefault();
+                try{for(java.util.Locale locale:new java.util.Locale[]{java.util.Locale.ENGLISH,java.util.Locale.FRENCH}){
+                    java.util.Locale.setDefault(locale);
+                    android.content.res.Configuration config=new android.content.res.Configuration(getTargetContext().getResources().getConfiguration());config.setLocale(locale);
+                    android.content.Context localized=getTargetContext().createConfigurationContext(config);
+                    if(!Hardening.isTelemetrySetting(localized.getString(0x7f110318))||!Hardening.hideInfoSetting(localized.getString(0x7f1102ad)))localeRows.set(false);
+                }}finally{java.util.Locale.setDefault(previous);}
+            });
+            check(localeRows.get(),"obsolete settings stay hidden after an in-process language change");
             eval("window.WebSocket=class FixtureSocket{addEventListener(name,fn){this.receive=fn}message(value){this.receive({data:JSON.stringify(value)})}};true");
             eval(asset("connect-state.js"));
             eval(asset("native-fetch.js"));

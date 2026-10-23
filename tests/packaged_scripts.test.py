@@ -5,7 +5,7 @@ from pathlib import Path
 
 root=Path(__file__).resolve().parents[1]
 strings=[]
-with zipfile.ZipFile(root/'output/SpotX-WebView-2.0.1.apk') as apk:
+with zipfile.ZipFile(root/'output/SpotX-WebView-2.0.2.apk') as apk:
     for name in apk.namelist():
         if not (name.startswith('classes') and name.endswith('.dex')):continue
         dex=apk.read(name)
@@ -47,4 +47,14 @@ verify('window.playFromUri = function(uri, contextUri)', ['spotxConnect.target()
 verify('var reqPause=false,firstPlay=true', ['spotxBlockingDialog', '#onetrust-banner-sdk', 'visibility:hidden!important'])
 assert not any('if(ft && window.__splTakeControl' in s for s in strings), 'Legacy automatic device clicks remain in DEX'
 checks+=1
+for stale in ['2.0 aperçu','https://github.com/lyssadev/Spotilol',
+              'https://github.com/lyssadev/Spotilol/releases/latest',
+              'https://api.github.com/repos/lyssadev/Spotilol/releases/latest','https://discord.gg/95dAE2UkqP']:
+    assert stale not in strings, f'Obsolete settings value remains: {stale}'
+    checks+=1
+for current in ['https://github.com/BoiledStone/SpotX-WebView',
+                'https://github.com/BoiledStone/SpotX-WebView/issues',
+                'https://api.github.com/repos/BoiledStone/SpotX-WebView/releases/latest']:
+    assert current in strings, f'Missing current settings link: {current}'
+    checks+=1
 print(f'PASS {checks} compiled script checks, including inlined runtime copies')

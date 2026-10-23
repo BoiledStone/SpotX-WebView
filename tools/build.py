@@ -18,7 +18,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BASE_HASH = 'a48b347b00120ffb223932448fee3a503b22e9b73e399f831f8f512604268077'
 APP_ID = 'com.boiled.spotx.webview'
-VERSION = '2.0.1'
+VERSION = '2.0.2'
+VERSION_CODE = 20007
 ANDROID = '{http://schemas.android.com/apk/res/android}'
 ET.register_namespace('android', ANDROID[1:-1])
 
@@ -161,7 +162,17 @@ def patch_smali(work):
             if updated!=raw:return m['prefix']+literal(updated)
             if raw=='com.project.lol': return m['prefix']+literal(APP_ID)
             if raw=='Spotilol': return m['prefix']+literal('SpotX WebView')
-            if raw=='1.2.4': return m['prefix']+literal('2.0 aperçu')
+            if raw=='1.2.4': return m['prefix']+literal(VERSION)
+            if raw=='spotilol-log_': return m['prefix']+literal('spotx-webview-log_')
+            links={
+                'https://github.com/lyssadev/Spotilol':'https://github.com/BoiledStone/SpotX-WebView',
+                'https://github.com/lyssadev/Spotilol/releases':'https://github.com/BoiledStone/SpotX-WebView/releases',
+                'https://github.com/lyssadev/Spotilol/releases/latest':'https://github.com/BoiledStone/SpotX-WebView/releases/latest',
+                'https://api.github.com/repos/lyssadev/Spotilol/releases/latest':'https://api.github.com/repos/BoiledStone/SpotX-WebView/releases/latest',
+                'https://discord.gg/95dAE2UkqP':'https://github.com/BoiledStone/SpotX-WebView/issues'}
+            if raw in links:return m['prefix']+literal(links[raw])
+            if raw.startswith('# spotilol log export'):
+                return m['prefix']+literal(raw.replace('spotilol log export','SpotX WebView log export').replace('1.2.4 (23)',f'{VERSION} ({VERSION_CODE})'))
             return m[0]
         output=string_pattern.sub(transform,source)
         if path.relative_to(work).parts[0]=='smali':
@@ -199,11 +210,54 @@ def patch_smali(work):
         '.method public static final E(Ljava/lang/String;Ljava/lang/String;Ly32;ZLro1;Lyg0;I)V\n    .locals 27',
         '''.method public static final E(Ljava/lang/String;Ljava/lang/String;Ly32;ZLro1;Lyg0;I)V
     .locals 27
-    invoke-static/range {p0 .. p0}, Lcom/boiled/spotx/Hardening;->hideTakeoverSetting(Ljava/lang/String;)Z
+    invoke-static/range {p0 .. p0}, Lcom/boiled/spotx/Hardening;->isTelemetrySetting(Ljava/lang/String;)Z
+    move-result v0
+    if-eqz v0, :spotx_toggle_setting
+    move-object/from16 v0, p0
+    move-object/from16 v1, p1
+    move-object/from16 v2, p2
+    const/4 v3, 0x0
+    const/4 v4, 0x0
+    const/4 v5, 0x0
+    const/4 v6, 0x0
+    const/4 v7, 0x0
+    const/4 v8, 0x0
+    move-object/from16 v9, p5
+    const/4 v10, 0x0
+    const/16 v11, 0x1f8
+    invoke-static/range {v0 .. v11}, Lb15;->F(Ljava/lang/String;Ljava/lang/String;Ly32;Lvx3;Lqo1;Lqo1;ZZLjava/lang/String;Lyg0;II)V
+    return-void
+    :spotx_toggle_setting
+    invoke-static/range {p0 .. p0}, Lcom/boiled/spotx/Hardening;->hideToggleSetting(Ljava/lang/String;)Z
     move-result v0
     if-eqz v0, :spotx_setting_visible
     return-void
     :spotx_setting_visible''','remove automatic takeover setting'))
+    edit('b15.smali',lambda s:replace_once(s,
+        '.method public static final F(Ljava/lang/String;Ljava/lang/String;Ly32;Lvx3;Lqo1;Lqo1;ZZLjava/lang/String;Lyg0;II)V\n    .locals 41',
+        '''.method public static final F(Ljava/lang/String;Ljava/lang/String;Ly32;Lvx3;Lqo1;Lqo1;ZZLjava/lang/String;Lyg0;II)V
+    .locals 41
+    invoke-static/range {p0 .. p0}, Lcom/boiled/spotx/Hardening;->hideInfoSetting(Ljava/lang/String;)Z
+    move-result v0
+    if-eqz v0, :spotx_info_visible
+    return-void
+    :spotx_info_visible
+    move-object/from16 v0, p0
+    move-object/from16 v1, p4
+    invoke-static {v0, v1}, Lcom/boiled/spotx/ThemePicker;->wrap(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;
+    move-result-object v0
+    check-cast v0, Lqo1;
+    move-object/16 p4, v0''','theme gallery action and obsolete mode row'))
+    def remove_mode_divider(s):
+        start=s.index('    const v11, 0x7f1102ad')
+        end=s.index('    const v11, 0x7f11027f',start)
+        section=s[start:end]
+        section=replace_once(section,'    invoke-static/range {v11 .. v17}, Ly13;->c(Lk93;FJLyg0;II)V',
+            '    # The unavailable mode row is hidden; keep a single adjacent divider.','obsolete mode divider')
+        return s[:start]+section+s[end:]
+    edit('h05.smali',remove_mode_divider)
+    edit('b05.smali',lambda s:replace_once(s,'    sget-object v9, Lmc;->o:Ly32;',
+        '    invoke-static {}, Lwb0;->x()Ly32;\n    move-result-object v9','issue reporting icon'))
 
     def client(s):
         for name, policy in [('isGoogleAuthUrl','google'),('isSpotifyHost','spotify'),('isWebPlayerUrl','player')]:
@@ -433,6 +487,13 @@ def patch_resources(work):
             if name=='settings_dialog_version':node.text='SpotX WebView · %1$s';changed=True
             if name=='main_version_label':node.text='%1$s';changed=True
             if name=='splash_version_label':node.text='%1$s';changed=True
+            if name in ['settings_version_format','offline_version']:node.text='v%1$s';changed=True
+            if name=='settings_github_subtitle':node.text='github.com/BoiledStone/SpotX-WebView';changed=True
+            french=path.parent.name=='values-fr'
+            if name=='settings_discord_server':node.text='Signaler un problème' if french else 'Report an issue';changed=True
+            if name=='settings_discord_subtitle':node.text='GitHub · BoiledStone/SpotX-WebView';changed=True
+            if name=='settings_telemetry_subtitle':
+                node.text='Collecte analytique et rapports automatiques désactivés dans cette version.' if french else 'Analytics and automatic crash reporting are disabled in this edition.';changed=True
         if changed:tree.write(path,encoding='utf-8',xml_declaration=True)
     (work/'res/xml/spotx_network_security.xml').write_text('''<?xml version="1.0" encoding="utf-8"?>
 <network-security-config><base-config cleartextTrafficPermitted="false"><trust-anchors><certificates src="system"/></trust-anchors></base-config></network-security-config>''',encoding='utf-8')
@@ -444,7 +505,7 @@ def patch_resources(work):
         path=work/'res/mipmap-anydpi'/name
         path.write_text(path.read_text(encoding='utf-8').replace('@mipmap/ic_launcher_foreground','@drawable/spotx_foreground'),encoding='utf-8')
     yml=work/'apktool.yml';s=yml.read_text(encoding='utf-8')
-    s=replace_once(s,'versionCode: 23','versionCode: 20006','versionCode')
+    s=replace_once(s,'versionCode: 23','versionCode: '+str(VERSION_CODE),'versionCode')
     s=replace_once(s,'versionName: 1.2.4','versionName: '+VERSION,'versionName');yml.write_text(s,encoding='utf-8')
     assets=work/'assets/spotx';assets.mkdir(exist_ok=True)
     shutil.copy2(ROOT/'patches/secure-bridge.js',assets/'secure-bridge.js')
@@ -520,7 +581,7 @@ def main():
     run(bt/'zipalign.exe','-c','-P','16','4',output)
     (ROOT/'validation').mkdir(exist_ok=True)
     (ROOT/'validation/signature.txt').write_text(verification,encoding='utf-8')
-    report={'baseline_sha256':BASE_HASH,'application_id':APP_ID,'version':VERSION,'apk_sha256':digest(output),
+    report={'baseline_sha256':BASE_HASH,'application_id':APP_ID,'version':VERSION,'version_code':VERSION_CODE,'apk_sha256':digest(output),
         'apk_bytes':output.stat().st_size,'patch_stats':stats,'signature_verified':True,'alignment_16k_verified':True,
         'date':datetime.now(timezone.utc).date().isoformat(),'sources':'installed APK + independent Java/JavaScript patches'}
     (ROOT/'output/build-report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')

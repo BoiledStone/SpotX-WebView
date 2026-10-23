@@ -14,7 +14,7 @@ independent of Spotify and the official SpotX project.
 
 ### Download and install
 
-**[Download SpotX WebView 2.0.1](apk/SpotX-WebView-2.0.1.apk)**
+**[Download SpotX WebView 2.0.2](apk/SpotX-WebView-2.0.2.apk)**
 
 1. Download the APK to your phone.
 2. If Android asks, allow installation from your browser or file manager, then
@@ -42,7 +42,7 @@ The APK checksum is available in [SHA256SUMS](SHA256SUMS).
 | Android integration | Media notification, Android media session controls, background playback, and picture-in-picture (PiP). |
 | Automatic recovery | After a long time in the background, a stalled playback request reconnects the player and attempts to resume the track at its previous position. |
 | Library | Access to Spotify's catalog, albums, and playlists, with sorting and column controls. |
-| Customization | AMOLED/Material You themes, display settings, and options inherited from the original player. |
+| Themes | Searchable gallery with a player preview before applying, current selection, AMOLED/Material You support, and access to the advanced editor with imports and exports. |
 | Profiles | Saved login profiles in the app's encrypted storage, plus a sleep timer. |
 | Inherited features | Ad filtering, lyrics, Android widgets, Android Auto integration, and downloads through the inherited engine. Availability may change with the services they use. |
 
@@ -69,6 +69,11 @@ session. Cookies and profiles are not cleared.
 
 - Compact player, French labels, corrected gestures, and a properly collapsed library.
 - Settings open directly from a gear icon, without an intermediate panel.
+- Settings link to this repository, current releases, and GitHub issue reporting.
+- Theme selection can be previewed and cancelled; applying a preset switches off
+  system colors so that the chosen palette actually takes effect.
+- Removed unavailable interface modes and the telemetry toggle disabled in this edition.
+- Saved profile restoration keeps the login cookie inaccessible to JavaScript.
 - Removed inherited automatic device selection and the obsolete takeover setting.
 - Separate local and active device identities; incoming Connect events update the
   target, and late network responses cannot override a newer handoff.
@@ -146,7 +151,7 @@ sécurité. Elle est indépendante de Spotify et du projet SpotX officiel.
 
 ### Télécharger et installer
 
-**[Télécharger SpotX WebView 2.0.1](apk/SpotX-WebView-2.0.1.apk)**
+**[Télécharger SpotX WebView 2.0.2](apk/SpotX-WebView-2.0.2.apk)**
 
 1. Télécharger l'APK sur le téléphone.
 2. Autoriser son installation depuis le navigateur ou le gestionnaire de fichiers
@@ -174,7 +179,7 @@ L'empreinte de l'APK est fournie dans [SHA256SUMS](SHA256SUMS).
 | Intégration Android | Notification média, commandes de la session Android, lecture en arrière-plan et fenêtre flottante PiP. |
 | Reprise automatique | Après une longue veille, une commande bloquée déclenche une reconnexion du lecteur et une tentative de reprise du morceau et de sa position. |
 | Bibliothèque | Accès au catalogue Spotify, aux albums et playlists, tri et colonnes. |
-| Personnalisation | Thèmes AMOLED/Material You, réglages d'affichage et options héritées du lecteur d'origine. |
+| Thèmes | Galerie avec recherche et aperçu du lecteur avant application, sélection actuelle, prise en charge AMOLED/Material You et accès à l'éditeur avancé avec imports et exports. |
 | Profils | Profils de connexion enregistrés dans le stockage chiffré de l'application et minuterie de sommeil. |
 | Fonctions héritées | Filtrage publicitaire, paroles, widgets Android, intégration Android Auto et téléchargements via le moteur hérité. Leur disponibilité peut évoluer avec les services utilisés. |
 
@@ -201,6 +206,11 @@ session du lecteur. Les cookies et profils ne sont pas effacés.
 
 - Lecteur compact, libellés français, gestes corrigés et bibliothèque repliée proprement.
 - Paramètres accessibles directement par une roue dentée, sans panneau intermédiaire.
+- Liens des paramètres vers ce dépôt, ses versions et les signalements GitHub.
+- Aperçu du thème et annulation sans changer le réglage ; l'application d'un thème
+  désactive les couleurs système pour que la palette choisie prenne effet.
+- Retrait des modes d'interface indisponibles et de l'interrupteur de télémétrie désactivée dans cette édition.
+- Protection du cookie de connexion contre la lecture JavaScript lors de la restauration d'un profil.
 - Suppression de la sélection automatique d'appareil héritée et de son réglage devenu inutile.
 - Identifiants du lecteur local et de l'appareil actif séparés ; suivi des événements
   Connect entrants et protection contre les réponses tardives après un transfert.
