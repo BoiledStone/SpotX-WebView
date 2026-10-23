@@ -1,0 +1,19 @@
+/.local/
+/baseline/*
+!/baseline/README.md
+/build/
+/decoded/
+/audit-sources/
+/output/
+/tools/apktool.jar
+/tools/jadx/
+/tools/jadx.zip
+/tools/test-runtime/
+/validation/
+__pycache__/
+*.pyc
+*.p12
+*.jks
+*.keystore
+*.idsig
+# apk/ is deliberately included: it contains the installable release.

@@ -1,0 +1,15 @@
+{
+  "baseline_sha256": "a48b347b00120ffb223932448fee3a503b22e9b73e399f831f8f512604268077",
+  "application_id": "com.boiled.spotx.webview",
+  "version": "2.0.0",
+  "apk_sha256": "d943605b984ce37503e72a68c3cce3bd8da07b4155f3f876877e8f624a52d5f9",
+  "apk_bytes": 19407831,
+  "patch_stats": {
+    "script_replacements": 30,
+    "smali_files_examined": 16407
+  },
+  "signature_verified": true,
+  "alignment_16k_verified": true,
+  "date": "2026-10-23",
+  "sources": "installed APK + independent Java/JavaScript patches"
+}
